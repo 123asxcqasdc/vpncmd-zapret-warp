@@ -59,6 +59,36 @@
     margin-inline: auto;
   }
 
+  /* ---------- announcement ---------- */
+  .announce {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .announce-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 36px;
+    padding-block: 6px;
+    text-align: center;
+  }
+  .announce .badge {
+    flex: 0 0 auto;
+    padding: 1px 7px;
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .announce a { color: var(--text-secondary); text-decoration: underline; text-underline-offset: 3px; }
+  .announce a:hover { color: var(--accent); }
+  .announce .arrow { text-decoration: none; }
+
   /* ---------- topbar ---------- */
   .topbar {
     position: sticky;
@@ -531,6 +561,14 @@
 </style>
 </head>
 <body>
+
+<div class="announce">
+  <div class="wrap announce-inner">
+    <span class="badge">New</span>
+    <span>v1.0 — прогресс-бар загрузки и автопропуск уже установленного WARP</span>
+    <a href="#how">как работает <span class="arrow" aria-hidden="true">→</span></a>
+  </div>
+</div>
 
 <header class="topbar" id="topbar">
   <div class="wrap topbar-inner">
