@@ -40,6 +40,7 @@
 
   body {
     margin: 0;
+    background: var(--bg);
     font-family: var(--mono);
     font-size: 15px;
     line-height: 1.6;
@@ -63,7 +64,7 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--border);
     background: color-mix(in srgb, var(--bg) 82%, transparent);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -190,7 +191,7 @@
   .hero-art {
     margin: clamp(24px, 4vw, 40px) 0 0;
     font-family: var(--mono);
-    font-size: clamp(5.5px, 1.32vw, 14px);
+    font-size: clamp(6px, 1.55vw, 17px);
     line-height: 1.08;
     letter-spacing: 0;
     color: var(--accent);
@@ -496,11 +497,14 @@
   .foot-bottom .sep { color: var(--border-strong); }
 
   /* ---------- reveal ---------- */
-  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
-  .reveal.in { opacity: 1; transform: none; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  .reveal.in { animation: rise .45s ease both; }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .reveal { opacity: 1; transform: none; transition: none; }
+    .reveal.in { animation: none; }
     .pulse { animation: none; }
   }
 
@@ -816,7 +820,7 @@
           io.unobserve(entry.target);
         }
       });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+    }, { rootMargin: '0px 0px 12% 0px', threshold: 0 });
     items.forEach(function (el) { io.observe(el); });
   } else {
     items.forEach(function (el) { el.classList.add('in'); });
