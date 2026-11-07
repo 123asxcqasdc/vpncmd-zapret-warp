@@ -1,2 +1,3 @@
 *.bat -text
 *.md text eol=lf
+*.html text eol=lf
