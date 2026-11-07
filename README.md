@@ -38,7 +38,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://vpn-cmd.p7z.
 
 ## Сайт
 
-Откройте **https://vpn-cmd.p7z.ru/** (или https://123asxcqasdc.github.io/vpncmd-zapret-warp/) — тёмный сайт в стиле терминала, как у opencode.ai: моноширинный шрифт, ASCII-логотип, секции и карточки.
+Откройте **https://vpn-cmd.p7z.ru/** 
 
 На странице есть:
 
