@@ -426,8 +426,8 @@
 
   function centerWindow() {
     win.classList.remove('maximized', 'minimized', 'hidden');
-    win.style.left = '50%';
-    win.style.top = '50%';
+    win.style.left = '';
+    win.style.top = '';
     setStatus('window centered');
   }
 
@@ -505,9 +505,16 @@
     if (e.target.closest('.wctl')) return;
     if (win.classList.contains('maximized')) return;
     var rect = win.getBoundingClientRect();
-    drag = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
-    win.style.left = rect.left + 'px';
-    win.style.top = rect.top + 'px';
+    var curLeft = win.style.left.indexOf('px') > 0 ? parseFloat(win.style.left) : NaN;
+    var curTop = win.style.top.indexOf('px') > 0 ? parseFloat(win.style.top) : NaN;
+    var centerX = isFinite(curLeft) ? curLeft : rect.left + rect.width / 2;
+    var centerY = isFinite(curTop) ? curTop : rect.top + rect.height / 2;
+    drag = {
+      dx: e.clientX - centerX,
+      dy: e.clientY - centerY,
+      halfW: rect.width / 2,
+      halfH: rect.height / 2
+    };
     titlebar.classList.add('dragging');
     try { titlebar.setPointerCapture(e.pointerId); } catch (err) {}
     e.preventDefault();
@@ -518,8 +525,8 @@
     var x = e.clientX - drag.dx;
     var y = e.clientY - drag.dy;
     var minVisible = 80;
-    x = Math.min(Math.max(x, minVisible - win.offsetWidth), window.innerWidth - minVisible);
-    y = Math.min(Math.max(y, 0), window.innerHeight - 40);
+    x = Math.min(Math.max(x, minVisible - drag.halfW), window.innerWidth - minVisible + drag.halfW);
+    y = Math.min(Math.max(y, drag.halfH), window.innerHeight - 40 + drag.halfH);
     win.style.left = x + 'px';
     win.style.top = y + 'px';
   });
