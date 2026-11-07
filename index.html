@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>VpnCMD — terminal</title>
+<style>
+  :root {
+    --bg: #000000;
+    --fg: #33ff66;
+    --dim: #1c7a37;
+    --glow: rgba(51, 255, 102, 0.35);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  body { cursor: default; }
+
+  #term {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--fg);
+    font-family: "Cascadia Mono", "Consolas", "SFMono-Regular", "DejaVu Sans Mono", "Liberation Mono", monospace;
+    font-size: 16px;
+    line-height: 1.15;
+    font-variant-ligatures: none;
+    white-space: pre;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    cursor: grab;
+    outline: none;
+    text-shadow: 0 0 6px var(--glow);
+    will-change: left, top, font-size;
+  }
+  #term.dragging { cursor: grabbing; }
+
+  #term[data-theme="amber"] {
+    --fg: #ffb000;
+    --dim: #8a5f00;
+    --glow: rgba(255, 176, 0, 0.35);
+  }
+  #term[data-theme="white"] {
+    --fg: #e6edf3;
+    --dim: #7d8590;
+    --glow: rgba(230, 237, 243, 0.25);
+  }
+
+  .cursor {
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  noscript {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--fg);
+    font-family: monospace;
+  }
+</style>
+</head>
+<body>
+<pre id="term" tabindex="0" aria-label="VpnCMD terminal"></pre>
+<noscript>VpnCMD terminal — enable JavaScript</noscript>
+<script>
+(function () {
+  'use strict';
+
+  var LOGO = [" __     __            ____ __  __ ____  "," ╲ ╲   ╱ ╱ __  _ __  ╱ ___│  ╲╱  │  _ ╲ ","  ╲ ╲ ╱ ╱ \u0027_ ╲│ \u0027_ ╲│ │   │ │╲╱│ │ │ │ │","   ╲ V ╱│ │_) │ │ │ │ │___│ │  │ │ │_│ │","    ╲_╱ │ .__╱│_│ │_│╲____│_│  │_│____╱ ","        │_│                             "];
+  var REPO = 'https://github.com/123asxcqasdc/vpncmd-zapret-warp';
+  var RAW = REPO + '/raw/main/VpnCMD.bat';
+  var PROMPT = 'C:\\VpnCMD> ';
+  var THEMES = ['green', 'amber', 'white'];
+
+  var term = document.getElementById('term');
+  var output = [];
+  var input = '';
+  var fontSize = 16;
+  var posX = window.innerWidth / 2;
+  var posY = window.innerHeight / 2;
+  var themeIndex = 0;
+
+  function esc(text) {
+    return text.replace(/[&<>]/g, function (ch) {
+      return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : '&gt;';
+    });
+  }
+
+  function render() {
+    var text = output.concat([PROMPT + input]).join('\n');
+    term.innerHTML = esc(text) + '<span class="cursor">\u2588</span>';
+  }
+
+  function applyPos() {
+    term.style.left = posX + 'px';
+    term.style.top = posY + 'px';
+  }
+
+  function resetView() {
+    posX = window.innerWidth / 2;
+    posY = window.innerHeight / 2;
+    fontSize = window.innerWidth < 600 ? 11 : 16;
+    term.style.fontSize = fontSize + 'px';
+    applyPos();
+  }
+
+  function clampPos() {
+    posX = Math.min(Math.max(posX, 24), window.innerWidth - 24);
+    posY = Math.min(Math.max(posY, 16), window.innerHeight - 16);
+    applyPos();
+  }
+
+  function runCommand(raw) {
+    var cmd = raw.trim().toLowerCase();
+    output.push(PROMPT + raw);
+    if (!cmd) {
+      render();
+      return;
+    }
+    switch (cmd) {
+      case 'help':
+        output.push(
+          'commands:',
+          '  help       this list',
+          '  about      what is VpnCMD',
+          '  download   open VpnCMD.bat',
+          '  repo       open GitHub repository',
+          '  logo       show logo again',
+          '  theme      switch color',
+          '  date       current date/time',
+          '  clear      clear screen',
+          '  reset      reset position and zoom',
+          '  exit       try it',
+          ''
+        );
+        break;
+      case 'about':
+        output.push(
+          'VpnCMD — terminal-style installer of zapret (DPI bypass)',
+          'and Cloudflare WARP for Windows.',
+          'Source: ' + REPO,
+          ''
+        );
+        break;
+      case 'download':
+        output.push('opening ' + RAW, '');
+        window.open(RAW, '_blank', 'noopener');
+        break;
+      case 'repo':
+        output.push('opening ' + REPO, '');
+        window.open(REPO, '_blank', 'noopener');
+        break;
+      case 'logo':
+        output.push.apply(output, LOGO);
+        output.push('');
+        break;
+      case 'theme':
+        themeIndex = (themeIndex + 1) % THEMES.length;
+        term.setAttribute('data-theme', THEMES[themeIndex]);
+        output.push('theme: ' + THEMES[themeIndex], '');
+        break;
+      case 'date':
+        output.push(new Date().toString(), '');
+        break;
+      case 'clear':
+        output.length = 0;
+        break;
+      case 'reset':
+        resetView();
+        output.push('view reset.', '');
+        break;
+      case 'exit':
+        output.push('there is no escape. (double-click resets the view)', '');
+        break;
+      default:
+        output.push("command not found: " + raw.trim() + ". type 'help'.", '');
+    }
+    render();
+  }
+
+  /* ---------- keyboard ---------- */
+  term.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) {
+      e.preventDefault();
+      output.length = 0;
+      render();
+      return;
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      var raw = input;
+      input = '';
+      runCommand(raw);
+      return;
+    }
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      input = input.slice(0, -1);
+      render();
+      return;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      input = '';
+      render();
+      return;
+    }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      return;
+    }
+    if (e.key.indexOf('Arrow') === 0) {
+      e.preventDefault();
+      var step = e.shiftKey ? 64 : 12;
+      if (e.key === 'ArrowUp') posY -= step;
+      if (e.key === 'ArrowDown') posY += step;
+      if (e.key === 'ArrowLeft') posX -= step;
+      if (e.key === 'ArrowRight') posX += step;
+      clampPos();
+      return;
+    }
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      input += e.key;
+      render();
+    }
+  });
+
+  /* ---------- mouse / touch ---------- */
+  var dragging = false;
+  var dragDX = 0;
+  var dragDY = 0;
+
+  term.addEventListener('pointerdown', function (e) {
+    term.focus();
+    dragging = true;
+    dragDX = e.clientX - posX;
+    dragDY = e.clientY - posY;
+    term.classList.add('dragging');
+    if (term.setPointerCapture) term.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  term.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    posX = e.clientX - dragDX;
+    posY = e.clientY - dragDY;
+    applyPos();
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    term.classList.remove('dragging');
+    if (term.releasePointerCapture && e.pointerId !== undefined) {
+      try { term.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+  }
+  term.addEventListener('pointerup', endDrag);
+  term.addEventListener('pointercancel', endDrag);
+
+  term.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    fontSize = Math.min(40, Math.max(8, fontSize + (e.deltaY < 0 ? 1 : -1)));
+    term.style.fontSize = fontSize + 'px';
+  }, { passive: false });
+
+  term.addEventListener('dblclick', function (e) {
+    e.preventDefault();
+    resetView();
+  });
+
+  document.addEventListener('pointerdown', function () {
+    term.focus();
+  });
+
+  window.addEventListener('resize', clampPos);
+
+  /* ---------- boot ---------- */
+  var boot = LOGO.concat([
+    '',
+    'VpnCMD web terminal  v1.0',
+    'zapret + WARP installer for Windows',
+    '',
+    'drag / arrows — move    wheel — zoom    double-click — reset',
+    "type 'help' and press Enter",
+    ''
+  ]);
+  var bootIndex = 0;
+
+  function bootTick() {
+    if (bootIndex < boot.length) {
+      output.push(boot[bootIndex]);
+      bootIndex += 1;
+      render();
+      window.setTimeout(bootTick, 45);
+    } else {
+      term.focus();
+    }
+  }
+
+  term.setAttribute('data-theme', THEMES[0]);
+  resetView();
+  render();
+  bootTick();
+})();
+</script>
+</body>
+</html>
