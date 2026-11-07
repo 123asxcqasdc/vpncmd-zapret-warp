@@ -9,78 +9,331 @@
 <title>VpnCMD — terminal</title>
 <style>
   :root {
-    --bg: #000000;
     --fg: #33ff66;
     --dim: #1c7a37;
-    --glow: rgba(51, 255, 102, 0.35);
+    --glow: rgba(51, 255, 102, 0.22);
+    --bg: #000000;
   }
+  :root[data-theme="amber"] {
+    --fg: #ffb000;
+    --dim: #8a5f00;
+    --glow: rgba(255, 176, 0, 0.22);
+  }
+  :root[data-theme="white"] {
+    --fg: #e6edf3;
+    --dim: #7d8590;
+    --glow: rgba(230, 237, 243, 0.16);
+  }
+
   * { box-sizing: border-box; }
   html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
-    height: 100%;
     background: var(--bg);
     overflow: hidden;
   }
-  body { cursor: default; }
+  body {
+    font-family: "Cascadia Mono", "Consolas", "SFMono-Regular", "DejaVu Sans Mono", "Liberation Mono", monospace;
+    color: var(--fg);
+  }
 
-  #term {
+  /* ---------- window ---------- */
+  #win {
     position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    margin: 0;
-    padding: 0;
+    width: min(94vw, 940px);
+    height: min(88vh, 650px);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border: 1px solid var(--dim);
+    box-shadow: 0 0 0 1px #000, 0 0 34px var(--glow);
+    font-size: clamp(11px, 1.35vw, 16px);
+    line-height: 1.35;
+    user-select: none;
+    -webkit-user-select: none;
+    z-index: 2;
+  }
+  #win.maximized {
+    width: 96vw;
+    height: 92vh;
+    left: 50% !important;
+    top: 50% !important;
+  }
+  #win.minimized { height: auto; }
+  #win.minimized .win-body,
+  #win.minimized .statusbar { display: none; }
+  #win.hidden { display: none; }
+
+  /* ---------- title bar ---------- */
+  .titlebar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 34px;
+    padding: 0 8px 0 12px;
+    border-bottom: 1px solid var(--dim);
+    background: #050505;
+    cursor: grab;
+    touch-action: none;
+  }
+  .titlebar.dragging { cursor: grabbing; }
+  .dots { display: flex; gap: 6px; flex: 0 0 auto; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #ff5f56; }
+  .dot.y { background: #ffbd2e; }
+  .dot.g { background: #27c93f; }
+  .title {
+    flex: 1;
+    text-align: center;
+    color: var(--dim);
+    font-size: 0.82em;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .wctl { display: flex; flex: 0 0 auto; }
+  .wctl button {
+    width: 30px;
+    height: 24px;
     border: 0;
     background: transparent;
     color: var(--fg);
-    font-family: "Cascadia Mono", "Consolas", "SFMono-Regular", "DejaVu Sans Mono", "Liberation Mono", monospace;
-    font-size: 16px;
-    line-height: 1.15;
-    font-variant-ligatures: none;
+    font: inherit;
+    cursor: pointer;
+  }
+  .wctl button:hover { background: var(--fg); color: var(--bg); }
+
+  /* ---------- body ---------- */
+  .win-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 16px 12px;
+    overflow: hidden;
+  }
+
+  .hero { flex: 0 0 auto; }
+  .logo {
+    margin: 0;
+    font-family: inherit;
+    font-size: 0.95em;
+    line-height: 1.05;
     white-space: pre;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
-    cursor: grab;
-    outline: none;
+    color: var(--fg);
     text-shadow: 0 0 6px var(--glow);
-    will-change: left, top, font-size;
   }
-  #term.dragging { cursor: grabbing; }
+  .tagline {
+    margin-top: 8px;
+    color: var(--dim);
+    font-size: 0.86em;
+    letter-spacing: 0.04em;
+  }
+  .tagline .hl { color: var(--fg); }
+  .cursor { animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 
-  #term[data-theme="amber"] {
-    --fg: #ffb000;
-    --dim: #8a5f00;
-    --glow: rgba(255, 176, 0, 0.35);
-  }
-  #term[data-theme="white"] {
-    --fg: #e6edf3;
-    --dim: #7d8590;
-    --glow: rgba(230, 237, 243, 0.25);
-  }
-
-  .cursor {
-    animation: blink 1s steps(1) infinite;
-  }
-  @keyframes blink {
-    0%, 49% { opacity: 1; }
-    50%, 100% { opacity: 0; }
+  .panes {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 12px;
   }
 
-  noscript {
+  .panel {
+    position: relative;
+    min-height: 0;
+    border: 1px solid var(--dim);
+    padding: 14px 10px 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel::before {
+    content: attr(data-title);
+    position: absolute;
+    top: -0.72em;
+    left: 10px;
+    padding: 0 6px;
+    background: var(--bg);
+    color: var(--dim);
+    font-size: 0.78em;
+    letter-spacing: 0.14em;
+  }
+
+  /* ---------- menu ---------- */
+  .menu {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .menu button {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    padding: 4px 6px;
+    border: 0;
+    background: transparent;
+    color: var(--fg);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .menu button .mark { display: inline-block; width: 1.1em; flex: 0 0 auto; }
+  .menu button.active .mark::before { content: ">"; }
+  .menu button:hover,
+  .menu button.active {
+    background: var(--fg);
+    color: var(--bg);
+    text-shadow: none;
+  }
+
+  /* ---------- content ---------- */
+  #screen {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding-right: 4px;
+  }
+  #screen h2 {
+    margin: 0 0 0.7em;
+    font-size: 1em;
+    letter-spacing: 0.14em;
+    color: var(--fg);
+  }
+  #screen p { margin: 0 0 0.8em; }
+  #screen ul { margin: 0 0 0.8em; padding-left: 1.3em; }
+  #screen li { margin: 0 0 0.35em; }
+  #screen .muted { color: var(--dim); }
+  #screen .url { color: var(--fg); word-break: break-all; }
+  #screen .action {
+    display: inline-block;
+    margin: 4px 8px 8px 0;
+    padding: 5px 12px;
+    border: 1px solid var(--fg);
+    background: transparent;
+    color: var(--fg);
+    font: inherit;
+    cursor: pointer;
+  }
+  #screen .action:hover { background: var(--fg); color: var(--bg); }
+
+  /* ---------- status bar ---------- */
+  .statusbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 5px 12px;
+    border-top: 1px solid var(--dim);
+    color: var(--dim);
+    font-size: 0.78em;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .statusbar .grow { flex: 1; }
+  .statusbar .right { text-align: right; }
+  #clock { flex: 0 0 auto; }
+
+  /* ---------- closed overlay ---------- */
+  #closed {
     position: fixed;
     inset: 0;
-    display: grid;
+    display: none;
     place-items: center;
+    z-index: 3;
+  }
+  #closed.show { display: grid; }
+  #closed button {
+    padding: 10px 18px;
+    border: 1px solid var(--fg);
+    background: transparent;
     color: var(--fg);
-    font-family: monospace;
+    font: inherit;
+    cursor: pointer;
+  }
+  #closed button:hover { background: var(--fg); color: var(--bg); }
+
+  @media (max-width: 720px) {
+    #win { width: 96vw; height: 92vh; }
+    .win-body { padding: 10px; gap: 10px; }
+    .panes {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+    .menu {
+      flex: 0 0 auto;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .menu button { width: auto; }
+    .logo { font-size: 0.78em; }
+    .statusbar .right { display: none; }
   }
 </style>
 </head>
 <body>
-<pre id="term" tabindex="0" aria-label="VpnCMD terminal"></pre>
-<noscript>VpnCMD terminal — enable JavaScript</noscript>
+
+<div id="win" data-theme="green">
+  <div class="titlebar" id="titlebar">
+    <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="title">VpnCMD — terminal — 80×24</div>
+    <div class="wctl">
+      <button type="button" data-action="min" title="Свернуть">─</button>
+      <button type="button" data-action="max" title="Развернуть">□</button>
+      <button type="button" data-action="close" title="Закрыть">✕</button>
+    </div>
+  </div>
+
+  <div class="win-body">
+    <header class="hero">
+      <pre class="logo" id="logo"></pre>
+      <div class="tagline">VpnCMD web terminal <span class="hl">·</span> zapret + WARP installer for Windows <span class="cursor">█</span></div>
+    </header>
+
+    <div class="panes">
+      <div class="panel" data-title="MENU">
+        <nav class="menu" id="menu">
+          <button type="button" data-screen="about"><span class="mark"></span>About</button>
+          <button type="button" data-screen="download"><span class="mark"></span>Download</button>
+          <button type="button" data-screen="repository"><span class="mark"></span>Repository</button>
+          <button type="button" data-screen="theme"><span class="mark"></span>Theme</button>
+          <button type="button" data-screen="controls"><span class="mark"></span>Controls</button>
+          <button type="button" data-action="center"><span class="mark"></span>Center window</button>
+          <button type="button" data-action="close"><span class="mark"></span>Close</button>
+        </nav>
+      </div>
+
+      <div class="panel" data-title="CONTENT">
+        <div id="screen"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div id="status">status: ready</div>
+    <div class="grow right">mouse only · hover / click / drag title bar</div>
+    <div id="clock">--:--:--</div>
+  </div>
+</div>
+
+<div id="closed">
+  <button type="button" data-action="reopen">▸ reopen terminal</button>
+</div>
+
 <script>
 (function () {
   'use strict';
@@ -88,244 +341,218 @@
   var LOGO = [" __     __            ____ __  __ ____  "," ╲ ╲   ╱ ╱ __  _ __  ╱ ___│  ╲╱  │  _ ╲ ","  ╲ ╲ ╱ ╱ \u0027_ ╲│ \u0027_ ╲│ │   │ │╲╱│ │ │ │ │","   ╲ V ╱│ │_) │ │ │ │ │___│ │  │ │ │_│ │","    ╲_╱ │ .__╱│_│ │_│╲____│_│  │_│____╱ ","        │_│                             "];
   var REPO = 'https://github.com/123asxcqasdc/vpncmd-zapret-warp';
   var RAW = REPO + '/raw/main/VpnCMD.bat';
-  var PROMPT = 'C:\\VpnCMD> ';
-  var THEMES = ['green', 'amber', 'white'];
 
-  var term = document.getElementById('term');
-  var output = [];
-  var input = '';
-  var fontSize = 16;
-  var posX = window.innerWidth / 2;
-  var posY = window.innerHeight / 2;
-  var themeIndex = 0;
+  var win = document.getElementById('win');
+  var titlebar = document.getElementById('titlebar');
+  var menu = document.getElementById('menu');
+  var screenEl = document.getElementById('screen');
+  var statusEl = document.getElementById('status');
+  var closedEl = document.getElementById('closed');
+  var clockEl = document.getElementById('clock');
 
-  function esc(text) {
-    return text.replace(/[&<>]/g, function (ch) {
-      return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : '&gt;';
-    });
+  var screens = {
+    about: function () {
+      return '' +
+        '<h2>ABOUT</h2>' +
+        '<p>VpnCMD — установщик обхода DPI <b>zapret</b> и <b>Cloudflare WARP</b> для Windows.</p>' +
+        '<p class="muted">Скачивает последнюю версию zapret, ставит службу, создаёт недостающие списки и при необходимости устанавливает WARP.</p>' +
+        '<p class="muted">Движок: zapret-discord-youtube (Flowseal).</p>' +
+        '<button class="action" data-href="https://github.com/Flowseal/zapret-discord-youtube">Открыть zapret</button>';
+    },
+    download: function () {
+      return '' +
+        '<h2>DOWNLOAD</h2>' +
+        '<p>Установщик — один .bat файл:</p>' +
+        '<p class="url">' + RAW + '</p>' +
+        '<button class="action" data-href="' + RAW + '">Скачать VpnCMD.bat</button>' +
+        '<p class="muted">Запускать от имени администратора. При повторном запуске уже установленные компоненты пропускаются.</p>';
+    },
+    repository: function () {
+      return '' +
+        '<h2>REPOSITORY</h2>' +
+        '<p class="url">' + REPO + '</p>' +
+        '<button class="action" data-href="' + REPO + '">Открыть GitHub</button>' +
+        '<p class="muted">README, исходники и история изменений.</p>';
+    },
+    theme: function () {
+      return '' +
+        '<h2>THEME</h2>' +
+        '<p>Цвет терминала:</p>' +
+        '<button class="action" data-action="theme:green">green</button>' +
+        '<button class="action" data-action="theme:amber">amber</button>' +
+        '<button class="action" data-action="theme:white">white</button>' +
+        '<p class="muted">Текущая тема: <span id="theme-name">' + currentTheme() + '</span></p>';
+    },
+    controls: function () {
+      return '' +
+        '<h2>CONTROLS</h2>' +
+        '<ul>' +
+        '<li>наведите и щёлкните пункт меню</li>' +
+        '<li>перетащите окно за заголовок</li>' +
+        '<li>колесо — прокрутка содержимого</li>' +
+        '<li>двойной щелчок по заголовку — центрировать</li>' +
+        '<li>─ □ ✕ — свернуть / развернуть / закрыть</li>' +
+        '</ul>' +
+        '<p class="muted">Клавиатура не нужна: всё управление мышью.</p>';
+    }
+  };
+
+  function currentTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'green';
   }
 
-  function render() {
-    var text = output.concat([PROMPT + input]).join('\n');
-    term.innerHTML = esc(text) + '<span class="cursor">\u2588</span>';
+  function setStatus(text) {
+    statusEl.textContent = 'status: ' + text;
   }
 
-  function applyPos() {
-    term.style.left = posX + 'px';
-    term.style.top = posY + 'px';
+  function showScreen(name) {
+    var build = screens[name];
+    if (!build) return;
+    screenEl.innerHTML = build();
+    screenEl.scrollTop = 0;
+    var items = menu.querySelectorAll('button[data-screen]');
+    for (var i = 0; i < items.length; i += 1) {
+      items[i].classList.toggle('active', items[i].getAttribute('data-screen') === name);
+    }
+    setStatus(name);
   }
 
-  function resetView() {
-    posX = window.innerWidth / 2;
-    posY = window.innerHeight / 2;
-    fontSize = window.innerWidth < 600 ? 11 : 16;
-    term.style.fontSize = fontSize + 'px';
-    applyPos();
+  function setTheme(name) {
+    document.documentElement.setAttribute('data-theme', name);
+    var label = document.getElementById('theme-name');
+    if (label) label.textContent = name;
+    setStatus('theme = ' + name);
   }
 
-  function clampPos() {
-    posX = Math.min(Math.max(posX, 24), window.innerWidth - 24);
-    posY = Math.min(Math.max(posY, 16), window.innerHeight - 16);
-    applyPos();
+  function centerWindow() {
+    win.classList.remove('maximized', 'minimized', 'hidden');
+    win.style.left = '50%';
+    win.style.top = '50%';
+    setStatus('window centered');
   }
 
-  function runCommand(raw) {
-    var cmd = raw.trim().toLowerCase();
-    output.push(PROMPT + raw);
-    if (!cmd) {
-      render();
+  function doAction(action) {
+    if (action.indexOf('theme:') === 0) {
+      setTheme(action.split(':')[1]);
       return;
     }
-    switch (cmd) {
-      case 'help':
-        output.push(
-          'commands:',
-          '  help       this list',
-          '  about      what is VpnCMD',
-          '  download   open VpnCMD.bat',
-          '  repo       open GitHub repository',
-          '  logo       show logo again',
-          '  theme      switch color',
-          '  date       current date/time',
-          '  clear      clear screen',
-          '  reset      reset position and zoom',
-          '  exit       try it',
-          '',
-          'controls: drag / arrows — move, wheel — zoom, double-click — reset',
-          ''
-        );
-        break;
-      case 'about':
-        output.push(
-          'VpnCMD — terminal-style installer of zapret (DPI bypass)',
-          'and Cloudflare WARP for Windows.',
-          'Source: ' + REPO,
-          ''
-        );
-        break;
-      case 'download':
-        output.push('opening ' + RAW, '');
-        window.open(RAW, '_blank', 'noopener');
-        break;
-      case 'repo':
-        output.push('opening ' + REPO, '');
-        window.open(REPO, '_blank', 'noopener');
-        break;
-      case 'logo':
-        output.push.apply(output, LOGO);
-        output.push('');
-        break;
-      case 'theme':
-        themeIndex = (themeIndex + 1) % THEMES.length;
-        term.setAttribute('data-theme', THEMES[themeIndex]);
-        output.push('theme: ' + THEMES[themeIndex], '');
-        break;
-      case 'date':
-        output.push(new Date().toString(), '');
-        break;
-      case 'clear':
-        output.length = 0;
-        break;
-      case 'reset':
-        resetView();
-        output.push('view reset.', '');
-        break;
-      case 'exit':
-        output.push('there is no escape. (double-click resets the view)', '');
-        break;
-      default:
-        output.push("command not found: " + raw.trim() + ". type 'help'.", '');
+    if (action === 'center') { centerWindow(); return; }
+    if (action === 'close') {
+      win.classList.add('hidden');
+      closedEl.classList.add('show');
+      return;
     }
-    render();
+    if (action === 'reopen') {
+      closedEl.classList.remove('show');
+      win.classList.remove('hidden');
+      centerWindow();
+      setStatus('ready');
+      return;
+    }
+    if (action === 'min') {
+      win.classList.toggle('minimized');
+      setStatus(win.classList.contains('minimized') ? 'window minimized' : 'window restored');
+      return;
+    }
+    if (action === 'max') {
+      win.classList.toggle('maximized');
+      setStatus(win.classList.contains('maximized') ? 'window maximized' : 'window restored');
+      return;
+    }
   }
 
-  /* ---------- keyboard ---------- */
-  term.addEventListener('keydown', function (e) {
-    if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) {
-      e.preventDefault();
-      output.length = 0;
-      render();
-      return;
-    }
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      var raw = input;
-      input = '';
-      runCommand(raw);
-      return;
-    }
-    if (e.key === 'Backspace') {
-      e.preventDefault();
-      input = input.slice(0, -1);
-      render();
-      return;
-    }
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      input = '';
-      render();
-      return;
-    }
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      return;
-    }
-    if (e.key.indexOf('Arrow') === 0) {
-      e.preventDefault();
-      var step = e.shiftKey ? 64 : 12;
-      if (e.key === 'ArrowUp') posY -= step;
-      if (e.key === 'ArrowDown') posY += step;
-      if (e.key === 'ArrowLeft') posX -= step;
-      if (e.key === 'ArrowRight') posX += step;
-      clampPos();
-      return;
-    }
-    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      e.preventDefault();
-      input += e.key;
-      render();
-    }
+  /* ---------- menu clicks ---------- */
+  menu.addEventListener('click', function (e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    var screenName = btn.getAttribute('data-screen');
+    if (screenName) { showScreen(screenName); return; }
+    var action = btn.getAttribute('data-action');
+    if (action) doAction(action);
   });
 
-  /* ---------- mouse / touch ---------- */
-  var dragging = false;
-  var dragDX = 0;
-  var dragDY = 0;
-
-  term.addEventListener('pointerdown', function (e) {
-    term.focus();
-    dragging = true;
-    dragDX = e.clientX - posX;
-    dragDY = e.clientY - posY;
-    term.classList.add('dragging');
-    if (term.setPointerCapture) {
-      try { term.setPointerCapture(e.pointerId); } catch (err) {}
+  /* ---------- content clicks ---------- */
+  screenEl.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-href],[data-action]');
+    if (!el) return;
+    var href = el.getAttribute('data-href');
+    if (href) {
+      window.open(href, '_blank', 'noopener');
+      setStatus('opening ' + href);
+      return;
     }
+    var action = el.getAttribute('data-action');
+    if (action) doAction(action);
+  });
+
+  /* ---------- title bar buttons ---------- */
+  titlebar.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    doAction(btn.getAttribute('data-action'));
+  });
+
+  closedEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    doAction(btn.getAttribute('data-action'));
+  });
+
+  /* ---------- drag window by title bar ---------- */
+  var drag = null;
+
+  titlebar.addEventListener('pointerdown', function (e) {
+    if (e.target.closest('.wctl')) return;
+    if (win.classList.contains('maximized')) return;
+    var rect = win.getBoundingClientRect();
+    drag = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+    win.style.left = rect.left + 'px';
+    win.style.top = rect.top + 'px';
+    titlebar.classList.add('dragging');
+    try { titlebar.setPointerCapture(e.pointerId); } catch (err) {}
     e.preventDefault();
   });
 
-  term.addEventListener('pointermove', function (e) {
-    if (!dragging) return;
-    posX = e.clientX - dragDX;
-    posY = e.clientY - dragDY;
-    applyPos();
+  titlebar.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var x = e.clientX - drag.dx;
+    var y = e.clientY - drag.dy;
+    var minVisible = 80;
+    x = Math.min(Math.max(x, minVisible - win.offsetWidth), window.innerWidth - minVisible);
+    y = Math.min(Math.max(y, 0), window.innerHeight - 40);
+    win.style.left = x + 'px';
+    win.style.top = y + 'px';
   });
 
   function endDrag(e) {
-    if (!dragging) return;
-    dragging = false;
-    term.classList.remove('dragging');
-    if (term.releasePointerCapture && e.pointerId !== undefined) {
-      try { term.releasePointerCapture(e.pointerId); } catch (err) {}
-    }
+    if (!drag) return;
+    drag = null;
+    titlebar.classList.remove('dragging');
+    try { titlebar.releasePointerCapture(e.pointerId); } catch (err) {}
   }
-  term.addEventListener('pointerup', endDrag);
-  term.addEventListener('pointercancel', endDrag);
+  titlebar.addEventListener('pointerup', endDrag);
+  titlebar.addEventListener('pointercancel', endDrag);
 
-  term.addEventListener('wheel', function (e) {
-    e.preventDefault();
-    fontSize = Math.min(40, Math.max(8, fontSize + (e.deltaY < 0 ? 1 : -1)));
-    term.style.fontSize = fontSize + 'px';
-  }, { passive: false });
-
-  term.addEventListener('dblclick', function (e) {
-    e.preventDefault();
-    resetView();
+  titlebar.addEventListener('dblclick', function (e) {
+    if (e.target.closest('.wctl')) return;
+    centerWindow();
   });
 
-  document.addEventListener('pointerdown', function () {
-    term.focus();
-  });
-
-  window.addEventListener('resize', clampPos);
+  /* ---------- clock ---------- */
+  function tickClock() {
+    var d = new Date();
+    var hh = String(d.getHours()).padStart(2, '0');
+    var mm = String(d.getMinutes()).padStart(2, '0');
+    var ss = String(d.getSeconds()).padStart(2, '0');
+    clockEl.textContent = hh + ':' + mm + ':' + ss;
+  }
+  tickClock();
+  window.setInterval(tickClock, 1000);
 
   /* ---------- boot ---------- */
-  var boot = LOGO.concat([
-    '',
-    'VpnCMD web terminal  v1.0',
-    'zapret + WARP installer for Windows',
-    '',
-    'drag / arrows — move    wheel — zoom    double-click — reset',
-    "type 'help' and press Enter",
-    ''
-  ]);
-  var bootIndex = 0;
-
-  function bootTick() {
-    if (bootIndex < boot.length) {
-      output.push(boot[bootIndex]);
-      bootIndex += 1;
-      render();
-      window.setTimeout(bootTick, 45);
-    } else {
-      term.focus();
-    }
-  }
-
-  term.setAttribute('data-theme', THEMES[0]);
-  resetView();
-  render();
-  bootTick();
+  document.getElementById('logo').textContent = LOGO.join('\n');
+  document.documentElement.setAttribute('data-theme', 'green');
+  showScreen('about');
 })();
 </script>
 </body>
