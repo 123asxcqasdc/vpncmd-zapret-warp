@@ -549,7 +549,7 @@
     .wrap { width: min(1200px, 100% - 32px); }
     .nav { display: none; }
     .topbar-inner { justify-content: space-between; }
-    .hero-art { font-size: clamp(4.5px, 1.55vw, 9px); }
+    .hero-art { font-size: clamp(7px, 2.2vw, 12px); }
     .tree { grid-template-columns: 1fr; }
     .foot-grid { grid-template-columns: 1fr; gap: 28px; }
   }
@@ -578,9 +578,10 @@
     </a>
     <nav class="nav" aria-label="Основная навигация">
       <a href="#about"><span class="idx">[ 0 ]</span>О проекте</a>
-      <a href="#how"><span class="idx">[ 1 ]</span>Как работает</a>
-      <a href="#install"><span class="idx">[ 2 ]</span>Установка</a>
-      <a href="#download"><span class="idx">[ 3 ]</span>Скачать</a>
+      <a href="#features"><span class="idx">[ 1 ]</span>Возможности</a>
+      <a href="#how"><span class="idx">[ 2 ]</span>Как работает</a>
+      <a href="#install"><span class="idx">[ 3 ]</span>Установка</a>
+      <a href="#download"><span class="idx">[ 4 ]</span>Скачать</a>
     </nav>
     <a class="topbar-gh" href="https://github.com/123asxcqasdc/vpncmd-zapret-warp" target="_blank" rel="noopener">
       GitHub <span aria-hidden="true">↗</span>
@@ -655,6 +656,25 @@
           <span class="arrow">→ 0 → 100%</span>
         </article>
       </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2><span class="sigil">##</span> Возможности</h2>
+        <span class="note">без ручной настройки</span>
+      </div>
+      <ul class="tree reveal">
+        <li><span class="branch">├──</span><span><b>Автозапуск</b> — служба <span class="inline-code">zapret</span> поднимается вместе с Windows</span></li>
+        <li><span class="branch">├──</span><span><b>Идемпотентность</b> — повторный запуск пропускает уже установленное</span></li>
+        <li><span class="branch">├──</span><span><b>Свежая сборка</b> — zapret скачивается с GitHub при каждом запуске</span></li>
+        <li><span class="branch">├──</span><span><b>Прогресс</b> — проценты, скорость и ETA вместо тишины в окне</span></li>
+        <li><span class="branch">├──</span><span><b>WARP</b> — ставится только если ещё не найден в системе</span></li>
+        <li><span class="branch">├──</span><span><b>Списки</b> — недостающие <span class="inline-code">lists\*-user.txt</span> создаются автоматически</span></li>
+        <li><span class="branch">├──</span><span><b>Один файл</b> — не нужны Python, Node.js или архиватор</span></li>
+        <li><span class="branch">└──</span><span><b>UAC</b> — права администратора запрашиваются самим скриптом</span></li>
+      </ul>
     </div>
   </section>
 
@@ -779,6 +799,7 @@
         <h3>Проект</h3>
         <ul>
           <li><a href="#about">Что внутри</a></li>
+          <li><a href="#features">Возможности</a></li>
           <li><a href="#how">Как работает</a></li>
           <li><a href="#install">Установка</a></li>
           <li><a href="#download">Скачать</a></li>
