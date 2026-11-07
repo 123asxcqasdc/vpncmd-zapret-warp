@@ -9,7 +9,7 @@
 
 # VpnCMD — установщик Zapret + Cloudflare WARP
 
-**Сайт (GitHub Pages):** https://123asxcqasdc.github.io/vpncmd-zapret-warp/
+**Сайт:** https://vpn-cmd.p7z.ru/ · **GitHub Pages:** https://123asxcqasdc.github.io/vpncmd-zapret-warp/
 
 Автоматический установщик обхода DPI [zapret](https://github.com/Flowseal/zapret-discord-youtube) и [Cloudflare WARP](https://1.1.1.1/) для Windows.
 
@@ -32,7 +32,7 @@
 
 ## Сайт
 
-Откройте **https://123asxcqasdc.github.io/vpncmd-zapret-warp/** — тёмный сайт в стиле терминала, как у opencode.ai: моноширинный шрифт, ASCII-логотип, секции и карточки.
+Откройте **https://vpn-cmd.p7z.ru/** (или https://123asxcqasdc.github.io/vpncmd-zapret-warp/) — тёмный сайт в стиле терминала, как у opencode.ai: моноширинный шрифт, ASCII-логотип, секции и карточки.
 
 На странице есть:
 
