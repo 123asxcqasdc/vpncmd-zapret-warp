@@ -34,6 +34,12 @@ try {
 }
 
 Write-Host ('  saved to ' + $bat) -ForegroundColor DarkGray
+
+if ($env:VPNCMD_DRYRUN -eq '1') {
+    Write-Host '  dry run: launch skipped (VPNCMD_DRYRUN=1)' -ForegroundColor Yellow
+    return
+}
+
 Write-Host '  starting installer...' -ForegroundColor DarkGray
 Write-Host ''
 
