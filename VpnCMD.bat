@@ -502,6 +502,63 @@ function Install-Warp {
     }
 }
 
+function New-WarpDesktopShortcut {
+    Show-Logo
+    Write-Host '============================================'
+    Write-Host ' Step 4: Create Cloudflare WARP desktop shortcut'
+    Write-Host '============================================'
+
+    $candidates = @(
+        (Join-Path $env:ProgramFiles 'Cloudflare\Cloudflare WARP\1.1.1.1.exe'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Cloudflare\Cloudflare WARP\1.1.1.1.exe'),
+        (Join-Path $env:LOCALAPPDATA 'Cloudflare\Cloudflare WARP\1.1.1.1.exe')
+    )
+
+    $uninstallRoots = @(
+        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    foreach ($root in $uninstallRoots) {
+        $item = Get-ItemProperty -Path $root -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -like '*Cloudflare WARP*' -and $_.DisplayIcon } |
+            Select-Object -First 1
+        if ($item) {
+            $iconPath = ($item.DisplayIcon -split ',')[0].Trim('"')
+            if ($iconPath) { $candidates += $iconPath }
+        }
+    }
+
+    $warpExe = $candidates | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
+    if (-not $warpExe) {
+        Write-Host '[WARN] Cloudflare WARP executable not found. Shortcut skipped.' -ForegroundColor Yellow
+        return $false
+    }
+
+    $desktop = [Environment]::GetFolderPath('Desktop')
+    if (-not $desktop) { $desktop = Join-Path $env:USERPROFILE 'Desktop' }
+    if (-not (Test-Path -LiteralPath $desktop)) {
+        New-Item -ItemType Directory -Path $desktop -Force | Out-Null
+    }
+
+    $shortcutPath = Join-Path $desktop 'Cloudflare WARP.lnk'
+    try {
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcut = $shell.CreateShortcut($shortcutPath)
+        $shortcut.TargetPath = $warpExe
+        $shortcut.WorkingDirectory = Split-Path -Parent $warpExe
+        $shortcut.IconLocation = ($warpExe + ',0')
+        $shortcut.Description = 'Cloudflare WARP (1.1.1.1)'
+        $shortcut.Save()
+        [void][Runtime.InteropServices.Marshal]::ReleaseComObject($shortcut)
+        [void][Runtime.InteropServices.Marshal]::ReleaseComObject($shell)
+        Write-Host ('[OK] Desktop shortcut created: ' + $shortcutPath) -ForegroundColor Green
+        return $true
+    } catch {
+        Write-Host ('[WARN] Could not create desktop shortcut: ' + $_) -ForegroundColor Yellow
+        return $false
+    }
+}
+
 # ============================================================
 #  MAIN
 # ============================================================
@@ -547,6 +604,8 @@ if (-not $warpInstalled) {
     Write-Host ' Step 3: SKIPPED - WARP already installed'
     Write-Host '============================================'
 }
+
+New-WarpDesktopShortcut | Out-Null
 
 Show-Logo
 Write-Host '============================================'

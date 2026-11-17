@@ -20,7 +20,8 @@
 3. Устанавливает службу `zapret` со стратегией `general (FAKE TLS AUTO).bat`.
 4. Создаёт недостающие пользовательские списки (`lists\*-user.txt`), без которых `winws.exe` не запускается.
 5. Если WARP не установлен — скачивает и устанавливает его.
-6. Загрузка файлов сопровождается прогресс-баром в стиле apt.
+6. Создаёт на рабочем столе ярлык `Cloudflare WARP.lnk` для запуска графического клиента.
+7. Загрузка файлов сопровождается прогресс-баром в стиле apt.
 
 Скрипт можно запускать повторно: уже установленные компоненты пропускаются.
 
@@ -51,7 +52,8 @@ curl -fsSL https://vpn-cmd.p7z.ru/install-linux.sh | sudo bash
 3. Скачивает [zapret-linux-easy](https://github.com/ImMALWARE/zapret-linux-easy) и ставит zapret в `/opt/zapret`.
 4. Использует `firewall type: iptables` и применяет правила ко **всем WAN-интерфейсам** (пустой `IFACE_WAN`).
 5. Создаёт и включает systemd-службу `zapret` с автозапуском.
-6. Если лицензия принята — добавляет официальный репозиторий Cloudflare, ставит `cloudflare-warp`, регистрирует и подключает WARP.
+6. Если лицензия принята — добавляет официальный репозиторий https://pkg.cloudflareclient.com/, ставит пакет `cloudflare-warp` (CLI `warp-cli` и графический клиент `warp-taskbar`), регистрирует и подключает WARP.
+7. Создаёт на рабочем столе `Cloudflare WARP.desktop` — ярлык графического клиента из этого пакета; иконка в трее появляется после следующего входа в сессию.
 
 Управление:
 
@@ -94,6 +96,8 @@ warp-cli status
 - служба Windows `zapret` (автозапуск)
 - служба `WinDivert` (устанавливается `winws`)
 - при необходимости — Cloudflare WARP
+- ярлык `Cloudflare WARP.lnk` на рабочем столе (Windows)
+- ярлык `Cloudflare WARP.desktop` на рабочем столе (Linux)
 
 При установке через команду рабочая папка находится в `%USERPROFILE%\Downloads\VpnCMD\zapret_install`.
 
