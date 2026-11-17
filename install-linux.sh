@@ -14,6 +14,8 @@
 
 set -euo pipefail
 
+export DEBIAN_FRONTEND=noninteractive
+
 readonly ZAPRET_REPO="https://github.com/ImMALWARE/zapret-linux-easy"
 readonly ZAPRET_ARCHIVE="$ZAPRET_REPO/archive/refs/heads/main.tar.gz"
 readonly CF_KEYRING="/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg"
@@ -147,6 +149,13 @@ DESKTOP
     ok "Desktop shortcut created: $entry"
 }
 
+# ---------------------------------------------------------------- проверки
+test_zapret_installed() {
+    [[ -x /opt/zapret/system/nfqws ]] || return 1
+    [[ -f /etc/systemd/system/zapret.service || -f /usr/lib/systemd/system/zapret.service ]] || return 1
+    return 0
+}
+
 # ============================================================
 #  MAIN
 # ============================================================
@@ -154,27 +163,33 @@ show_banner
 say "Work dir: /opt/zapret"
 say ''
 check "OS: ${PRETTY_NAME:-$ID}"
+command -v systemctl >/dev/null 2>&1 || die "systemd (systemctl) not found"
 
-if systemctl is-enabled --quiet zapret 2>/dev/null; then
-    check "Zapret is already installed (will be updated)."
+ZAPRET_INSTALLED="no"
+if test_zapret_installed; then ZAPRET_INSTALLED="yes"; fi
+WARP_INSTALLED="no"
+if command -v warp-cli >/dev/null 2>&1; then WARP_INSTALLED="yes"; fi
+
+if [[ "$ZAPRET_INSTALLED" == "yes" ]]; then
+    check "Zapret is already installed."
 else
     check "Zapret is NOT installed."
 fi
-if command -v warp-cli >/dev/null 2>&1; then
+if [[ "$WARP_INSTALLED" == "yes" ]]; then
     check "Cloudflare WARP is already installed."
 else
     check "Cloudflare WARP is NOT installed."
 fi
 say ''
 
+if [[ "$ZAPRET_INSTALLED" == "no" ]]; then
+
 # ---------------------------------------------------------------- Step 1
 step 1 "Download latest zapret-linux-easy"
-export DEBIAN_FRONTEND=noninteractive
 say "Installing dependencies (apt)..."
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends \
     curl ca-certificates gnupg lsb-release iptables ipset procps
-command -v systemctl >/dev/null 2>&1 || die "systemd (systemctl) not found"
 
 TMP_DIR="$(mktemp -d /tmp/vpncmd-zapret.XXXXXX)"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -241,6 +256,16 @@ else
     warn "Service is not running. Check manually: systemctl status zapret"
 fi
 
+else
+
+step "1-2" "SKIPPED - Zapret already installed"
+check "Service: zapret.service"
+check "Binary: /opt/zapret/system/nfqws"
+
+fi
+
+if [[ "$WARP_INSTALLED" == "no" ]]; then
+
 # ---------------------------------------------------------------- Step 3
 step 3 "Download and install Cloudflare WARP"
 say "Documentation: $CF_DOCS"
@@ -291,6 +316,14 @@ if [[ "$WARP_ACCEPT" == "yes" ]]; then
     fi
 else
     warn "Cloudflare license not accepted - WARP installation skipped."
+fi
+
+else
+
+step 3 "SKIPPED - Cloudflare WARP already installed"
+check "CLI: /usr/bin/warp-cli"
+check "GUI: /usr/bin/warp-taskbar"
+
 fi
 
 # ---------------------------------------------------------------- Step 4
