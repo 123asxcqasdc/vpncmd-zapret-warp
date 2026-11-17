@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="VpnCMD — установщик zapret и Cloudflare WARP для Windows одной командой в cmd.">
+<meta name="description" content="VpnCMD — установщик zapret и Cloudflare WARP для Windows и Ubuntu/Debian одной командой.">
 <meta property="og:title" content="VpnCMD — установщик Zapret + WARP">
-<meta property="og:description" content="Обход DPI для Windows. Одна команда в cmd: zapret + Cloudflare WARP.">
+<meta property="og:description" content="Обход DPI для Windows и Linux. Одна команда: zapret + Cloudflare WARP.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://vpn-cmd.p7z.ru/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230c0c0c'/%3E%3Ctext x='8' y='12' font-family='monospace' font-size='12' fill='%2333ff66' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
@@ -270,6 +270,7 @@
   .cmd-hint b { color: var(--text-secondary); font-weight: 600; }
   .cmd-hint a { color: var(--text-secondary); text-decoration: underline; text-underline-offset: 3px; }
   .cmd-hint a:hover { color: var(--accent); }
+  .hero-install .cmd + .cmd { margin-top: 10px; }
 
   /* ---------- sections ---------- */
   section { scroll-margin-top: 80px; }
@@ -444,6 +445,7 @@
     white-space: pre-wrap;
     word-break: break-word;
   }
+  .foot-install + .foot-install { margin-top: 8px; margin-bottom: 28px; }
 
   .foot-grid {
     display: grid;
@@ -529,7 +531,8 @@
     <nav class="nav" aria-label="Основная навигация">
       <a href="#about"><span class="idx">[ 0 ]</span>О проекте</a>
       <a href="#install"><span class="idx">[ 1 ]</span>Установка</a>
-      <a href="#features"><span class="idx">[ 2 ]</span>Возможности</a>
+      <a href="#linux"><span class="idx">[ 2 ]</span>Linux</a>
+      <a href="#features"><span class="idx">[ 3 ]</span>Возможности</a>
     </nav>
     <a class="topbar-gh" href="https://github.com/123asxcqasdc/vpncmd-zapret-warp" target="_blank" rel="noopener">
       GitHub <span aria-hidden="true">↗</span>
@@ -542,18 +545,18 @@
   <section class="hero">
     <div class="wrap hero-inner">
       <div class="meta-line">
-        <span class="live"><span class="pulse" aria-hidden="true"></span>v1.0 · windows 10/11</span>
+        <span class="live"><span class="pulse" aria-hidden="true"></span>v1.1 · windows 10/11 · ubuntu/debian</span>
         <span class="dot" aria-hidden="true">·</span>
-        <span>cmd + powershell</span>
+        <span>cmd + powershell + bash</span>
         <span class="dot" aria-hidden="true">·</span>
         <span>open source</span>
       </div>
 
       <pre class="hero-art" id="hero-art" aria-label="VpnCMD"></pre>
 
-      <h1><span class="bracket">[</span> Обход DPI для Windows <span class="bracket">]</span></h1>
+      <h1><span class="bracket">[</span> Обход DPI: Windows + Linux <span class="bracket">]</span></h1>
 
-      <p class="subtitle">VpnCMD ставит zapret и Cloudflare WARP одной командой.</p>
+      <p class="subtitle">VpnCMD ставит zapret и Cloudflare WARP одной командой — в Windows и Linux.</p>
 
       <div class="hero-install">
         <div class="cmd">
@@ -561,8 +564,14 @@
           <code id="cmd-hero">powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://vpn-cmd.p7z.ru/install.ps1 | iex"</code>
           <button class="copy" type="button" data-copy="#cmd-hero">copy</button>
         </div>
+        <div class="cmd">
+          <span class="prompt" aria-hidden="true">$</span>
+          <code id="cmd-hero-linux">curl -fsSL https://vpn-cmd.p7z.ru/install-linux.sh | sudo bash</code>
+          <button class="copy" type="button" data-copy="#cmd-hero-linux">copy</button>
+        </div>
         <p class="cmd-hint">
-          откройте <b>cmd</b>, вставьте команду и подтвердите UAC ·
+          Windows: откройте <b>cmd</b>, вставьте команду и подтвердите UAC ·
+          Linux: <b>Ubuntu / Debian</b>, команда <b>curl | sudo bash</b> ·
           <a href="https://github.com/123asxcqasdc/vpncmd-zapret-warp" target="_blank" rel="noopener">исходники на GitHub ↗</a>
         </p>
       </div>
@@ -656,6 +665,59 @@
     </div>
   </section>
 
+  <section class="section" id="linux">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2><span class="sigil">##</span> Установка на Linux</h2>
+        <span class="note">Ubuntu / Debian · curl | sudo bash</span>
+      </div>
+      <div class="install-grid">
+        <div class="reveal">
+          <div class="cmd">
+            <span class="prompt" aria-hidden="true">$</span>
+            <code id="cmd-linux">curl -fsSL https://vpn-cmd.p7z.ru/install-linux.sh | sudo bash</code>
+            <button class="copy" type="button" data-copy="#cmd-linux">copy</button>
+          </div>
+          <ol class="install-steps">
+            <li>
+              <span class="n">01</span>
+              <div><b>Откройте терминал.</b> Команда скачает скрипт и запустит его от root через <span class="inline-code">sudo</span>.</div>
+            </li>
+            <li>
+              <span class="n">02</span>
+              <div><b>Примите лицензию Cloudflare.</b> Скрипт спросит согласие с условиями WARP; при отказе WARP не будет установлен.</div>
+            </li>
+            <li>
+              <span class="n">03</span>
+              <div><b>Дождитесь завершения.</b> Скрипт поставит зависимости из apt, zapret с <span class="inline-code">iptables</span> на все WAN-интерфейсы и включит службу <span class="inline-code">zapret.service</span>.</div>
+            </li>
+            <li>
+              <span class="n">04</span>
+              <div><b>Проверьте.</b> <span class="inline-code">systemctl status zapret</span> и <span class="inline-code">warp-cli status</span>.</div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="reveal">
+          <div class="req-list">
+            <div class="req"><span class="k">ОС</span><span class="v">Ubuntu / Debian</span></div>
+            <div class="req"><span class="k">Скрипт</span><span class="v">curl | sudo bash</span></div>
+            <div class="req"><span class="k">Firewall</span><span class="v">iptables</span></div>
+            <div class="req"><span class="k">Интерфейсы</span><span class="v">все WAN</span></div>
+            <div class="req"><span class="k">Служба</span><span class="v">systemd · автозапуск</span></div>
+            <div class="req"><span class="k">WARP</span><span class="v">по принятию лицензии</span></div>
+            <div class="req"><span class="k">Сеть</span><span class="v">github.com</span></div>
+            <div class="req"><span class="k">Сеть</span><span class="v">pkg.cloudflareclient.com</span></div>
+          </div>
+          <p class="fineprint">
+            zapret ставится из zapret-linux-easy, WARP — из официального репозитория Cloudflare.
+            Используйте на свой страх и риск и соблюдайте законодательство вашей страны.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="features">
     <div class="wrap">
       <div class="section-head reveal">
@@ -670,6 +732,8 @@
         <li><span class="branch">├──</span><span><b>WARP</b> — ставится только если ещё не найден в системе</span></li>
         <li><span class="branch">├──</span><span><b>Списки</b> — недостающие <span class="inline-code">lists\*-user.txt</span> создаются автоматически</span></li>
         <li><span class="branch">├──</span><span><b>Одна команда</b> — не нужно ничего скачивать вручную</span></li>
+        <li><span class="branch">├──</span><span><b>Linux</b> — Ubuntu/Debian ставятся через <span class="inline-code">curl | sudo bash</span></span></li>
+        <li><span class="branch">├──</span><span><b>Лицензия WARP</b> — согласие запрашивается в терминале перед установкой</span></li>
         <li><span class="branch">└──</span><span><b>UAC</b> — права администратора запрашиваются самим скриптом</span></li>
       </ul>
     </div>
@@ -680,21 +744,27 @@
 <footer>
   <div class="wrap">
     <div class="foot-install">
-      <span class="k">install</span>
+      <span class="k">windows</span>
       <code id="cmd-footer">powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://vpn-cmd.p7z.ru/install.ps1 | iex"</code>
       <button class="copy" type="button" data-copy="#cmd-footer">copy</button>
+    </div>
+    <div class="foot-install">
+      <span class="k">linux</span>
+      <code id="cmd-footer-linux">curl -fsSL https://vpn-cmd.p7z.ru/install-linux.sh | sudo bash</code>
+      <button class="copy" type="button" data-copy="#cmd-footer-linux">copy</button>
     </div>
 
     <div class="foot-grid">
       <div>
         <pre class="foot-brand" id="foot-art" aria-hidden="true"></pre>
-        <span class="cap">zapret + warp · windows</span>
+        <span class="cap">zapret + warp · windows + linux</span>
       </div>
       <div class="foot-col">
         <h3>Проект</h3>
         <ul>
           <li><a href="#about">О проекте</a></li>
-          <li><a href="#install">Установка</a></li>
+          <li><a href="#install">Установка (Windows)</a></li>
+          <li><a href="#linux">Установка (Linux)</a></li>
           <li><a href="#features">Возможности</a></li>
         </ul>
       </div>
@@ -705,6 +775,7 @@
           <li><a href="https://github.com/Flowseal/zapret-discord-youtube" target="_blank" rel="noopener">zapret <span class="k">↗</span></a></li>
           <li><a href="https://1.1.1.1/" target="_blank" rel="noopener">Cloudflare WARP <span class="k">↗</span></a></li>
           <li><a href="https://github.com/123asxcqasdc/vpncmd-zapret-warp/blob/main/README.md" target="_blank" rel="noopener">README <span class="k">↗</span></a></li>
+          <li><a href="https://github.com/123asxcqasdc/vpncmd-zapret-warp/blob/main/install-linux.sh" target="_blank" rel="noopener">Linux-скрипт <span class="k">↗</span></a></li>
         </ul>
       </div>
     </div>

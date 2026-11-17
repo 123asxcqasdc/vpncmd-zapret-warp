@@ -11,7 +11,7 @@
 
 **Сайт:** https://vpn-cmd.p7z.ru/ · **GitHub Pages:** https://123asxcqasdc.github.io/vpncmd-zapret-warp/
 
-Автоматический установщик обхода DPI [zapret](https://github.com/Flowseal/zapret-discord-youtube) и [Cloudflare WARP](https://1.1.1.1/) для Windows.
+Автоматический установщик обхода DPI [zapret](https://github.com/Flowseal/zapret-discord-youtube) и [Cloudflare WARP](https://1.1.1.1/) для Windows и Linux (Ubuntu / Debian).
 
 ## Что делает скрипт
 
@@ -36,6 +36,34 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://vpn-cmd.p7z.
 
 При повторном запуске уже установленные компоненты пропускаются.
 
+## Установка на Linux (Ubuntu / Debian)
+
+Одна команда в терминале:
+
+```bash
+curl -fsSL https://vpn-cmd.p7z.ru/install-linux.sh | sudo bash
+```
+
+Скрипт делает следующее:
+
+1. Спрашивает согласие с лицензией Cloudflare (ToS и Privacy Policy). При отказе WARP не устанавливается.
+2. Ставит зависимости из apt (`curl`, `ca-certificates`, `gnupg`, `lsb-release`, `iptables`, `ipset`, `procps`).
+3. Скачивает [zapret-linux-easy](https://github.com/ImMALWARE/zapret-linux-easy) и ставит zapret в `/opt/zapret`.
+4. Использует `firewall type: iptables` и применяет правила ко **всем WAN-интерфейсам** (пустой `IFACE_WAN`).
+5. Создаёт и включает systemd-службу `zapret` с автозапуском.
+6. Если лицензия принята — добавляет официальный репозиторий Cloudflare, ставит `cloudflare-warp`, регистрирует и подключает WARP.
+
+Управление:
+
+```bash
+systemctl status zapret
+systemctl stop zapret
+systemctl start zapret
+warp-cli status
+```
+
+Конфиг zapret — `/opt/zapret/config.txt`, списки — `/opt/zapret/autohosts.txt`, `ipset.txt`, `ignore.txt`, `whitelist.txt`. Проверка конфига — `/opt/zapret/check.sh`.
+
 ## Сайт
 
 Откройте **https://vpn-cmd.p7z.ru/** 
@@ -53,6 +81,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://vpn-cmd.p7z.
 - Windows PowerShell 5.1
 - Права администратора
 - Доступ к `vpn-cmd.p7z.ru`, `github.com` и `downloads.cloudflareclient.com`
+
+### Linux
+
+- Ubuntu или Debian
+- systemd и `sudo`
+- Доступ к `vpn-cmd.p7z.ru`, `github.com` и `pkg.cloudflareclient.com`
 
 ## Что создаётся
 
