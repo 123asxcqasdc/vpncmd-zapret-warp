@@ -46,9 +46,7 @@ warn()  { printf '%s[WARN]%s %s\n' "$C_YELLOW" "$C_RESET" "$*" >&2; }
 err()   { printf '%s[ERROR]%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; }
 die()   { err "$*"; exit 1; }
 
-show_logo() {
-    if [[ -t 1 ]]; then clear >/dev/null 2>&1 || true; fi
-    cat <<'EOF'
+LOGO="$(cat <<'EOF'
   __     __            ____ __  __ ____
    \ \   / / __  _ __  / ___|  \/  |  _ \
     \ \ / / '_ \| '_ \| |   | |\/| | | | |
@@ -56,18 +54,44 @@ show_logo() {
       \_/ | .__/|_| |_|\____|_|  |_|____/
           |_|
 EOF
+)"
+readonly LOGO
+
+print_logo() { printf '%s\n' "$LOGO"; }
+
+print_header() {
     printf '\n============================================\n'
     printf ' VpnCMD - Zapret + WARP Auto Installer (Linux)\n'
     printf '============================================\n\n'
 }
 
+show_logo() {
+    if [[ -t 1 ]]; then clear >/dev/null 2>&1 || true; fi
+    print_logo
+    print_header
+}
+
+# Анимация набора логотипа, как в Windows-скрипте (Start-Sleep 10 ms на символ).
 show_banner() {
-    show_logo
+    if [[ -t 1 && -z "${NO_ANIMATION:-}" ]]; then
+        local line i
+        while IFS= read -r line; do
+            for ((i = 0; i < ${#line}; i++)); do
+                printf '%s' "${line:i:1}"
+                sleep 0.01
+            done
+            printf '\n'
+        done <<< "$LOGO"
+    else
+        print_logo
+    fi
+    print_header
     if [[ -t 1 ]]; then sleep 1; fi
 }
 
+# Заголовки шагов не печатают логотип повторно — только очищают экран.
 step() {
-    show_logo
+    if [[ -t 1 ]]; then clear >/dev/null 2>&1 || true; fi
     printf '============================================\n'
     printf ' Step %s: %s\n' "$1" "$2"
     printf '============================================\n\n'
